@@ -52,12 +52,18 @@ Then I focus on the problem of latency \& temporal asynchrony in cooperative per
 These two challenges are critical to spatial-temporal data consistency.
 Latency refers to the delay form sensation to fusion and decision-making, which can be caused by network transmission, data processing, and algorithmic computation.
 This latency come from bottlenecks in communication, computation, and synchronization, which can lead to outdated or incomplete information being used for decision-making.
-Temporal asynchrony refers to the misalignment of data timestamps from different sources,including RSUs and CAVs, which can lead to inconsistencies in the perception results. 
+Temporal asynchrony refers to the misalignment of data timestamps from different sources, including RSUs and CAVs, which can lead to inconsistencies in the perception results.
 
-Usually, those data fused trivially by addition or concatention, which can lead to spatial-temporal misalignment and inaccurate perception results.
-Moving objects are predicted to be in wrong historical positions, instead of their current positions, leading to phantom detections, tracking fragmentation, and dangerous miscalculations in downstream motion planning.
+Usually, data are fused trivially by addition or concatenation, which can lead to spatiotemporal misalignment and inaccurate perception results.
+Moving objects are predicted to be in wrong historical positions instead of their current positions, leading to phantom detections, tracking fragmentation, and dangerous miscalculations in downstream motion planning.
 
-\section{}
+And nowadays, there are several methods to address the latency and temporal asynchrony problem in cooperative perception, each compensating from different aspects.
+These include predicting current features using historical information, performing spatial warping of features via motion information or BEV flow, and leveraging trajectory information to establish correspondences across different timestamps.
+However, these methods align features in a single frame, which may not fully capture the temporal dynamics of moving objects and may not be robust to occlusions or missing data.
+Therefore, recently research moves toward object level.
+
+\section{Object level Alignment}
+
 
 % 設定 BibTeX 參考文獻樣式與引用資料庫檔名 
 \bibliographystyle{IEEEtran} 
