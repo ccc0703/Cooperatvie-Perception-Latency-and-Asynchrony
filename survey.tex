@@ -64,7 +64,7 @@ However, these methods align features in a single frame, which may not fully cap
 Therefore, recently research moves toward object level.
 
 \section{Object level Alignment}
-
+Object-Level Alignment 的核心概念是利用物體本身作為不同 Agent 與不同 timestamp 之間的 correspondence reference，例如 object state、bounding box、track、trajectory 或 object-level anchor。相較於直接對整張 feature map 進行 temporal compensation，object-level 方法可以針對個別物體估計其位置、速度與時間變化，再將歷史物體資訊 propagation 至當前 timestamp。例如，CoAnchor 利用 object-level spatiotemporal anchors 建立跨 Agent 的 correspondence，先進行 temporal propagation，再進一步處理 spatial misalignment，最後利用 object-level information 引導 dense feature fusion。由此可見，Asynchronous Feature Alignment 可進一步由 feature-level compensation 發展至 object-centric temporal alignment，透過更明確的物體 correspondence 與 motion information，降低 asynchronous information 對 cooperative perception 的影響。
 
 % 設定 BibTeX 參考文獻樣式與引用資料庫檔名 
 \bibliographystyle{IEEEtran} 
