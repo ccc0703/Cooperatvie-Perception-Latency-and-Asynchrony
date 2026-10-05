@@ -57,7 +57,8 @@ Temporal asynchrony refers to the misalignment of data timestamps from different
 Usually, data are fused trivially by addition or concatenation, which can lead to spatiotemporal misalignment and inaccurate perception results.
 Moving objects are predicted to be in wrong historical positions instead of their current positions, leading to phantom detections, tracking fragmentation, and dangerous miscalculations in downstream motion planning.
 
-And nowadays, there are several methods to address the latency and temporal asynchrony problem in cooperative perception, each compensating from different aspects.
+And nowadays, there are several methods to address the latency and temporal asynchrony problem in cooperative perception, each compensating from different aspects.\cite{wei2023asynchrony,song2025traf,du2025rcpbench,yazgan2025efficomm,yazgan2025slimcomm,li2026coanchor}
+
 These include predicting current features using historical information, performing spatial warping of features via motion information or BEV flow, and leveraging trajectory information to establish correspondences across different timestamps.
 However, these methods align features in a single frame, which may not fully capture the temporal dynamics of moving objects and may not be robust to occlusions or missing data.
 Therefore, recently research moves toward object level.
