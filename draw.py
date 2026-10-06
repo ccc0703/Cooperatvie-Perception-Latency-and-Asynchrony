@@ -12,7 +12,7 @@ from matplotlib.lines import Line2D
 
 plt.rcParams["font.family"] = "DejaVu Sans"
 
-fig = plt.figure(figsize=(20, 15), facecolor="white")
+fig = plt.figure(figsize=(22, 18), facecolor="#FFFFFF")
 ax = fig.add_axes([0, 0, 1, 1])
 
 ax.set_xlim(0, 1)
@@ -61,7 +61,7 @@ def text(
     ax.text(
         x, y, s,
         transform=ax.transAxes,
-        fontsize=fontsize,
+        fontsize=fontsize * 1.18,
         fontweight=weight,
         color=color,
         ha=ha,
@@ -128,7 +128,7 @@ text(
 text(
     0.50, 0.945,
     "From Broad Research Directions to Object-Level Asynchronous Alignment",
-    fontsize=10,
+    fontsize=11,
     color="#1565C0",
 )
 
@@ -165,10 +165,10 @@ topics = [
 ]
 
 topic_y = 0.805
-topic_w = 0.145
-topic_h = 0.085
-gap = 0.018
-start_x = 0.015
+topic_w = 0.148
+topic_h = 0.092
+gap = 0.015
+start_x = 0.02
 
 topic_centers = []
 
@@ -191,7 +191,7 @@ for i, (title, examples, fc, ec) in enumerate(topics):
         x + topic_w / 2,
         topic_y + 0.060,
         title,
-        fontsize=9.5,
+        fontsize=11,
         weight="bold",
         color="#0D47A1" if highlight else "#263238",
     )
@@ -200,8 +200,8 @@ for i, (title, examples, fc, ec) in enumerate(topics):
         x + topic_w / 2,
         topic_y + 0.022,
         examples,
-        fontsize=7.2,
-        color="#455A64",
+        fontsize=10.0,
+        color="#263238",
     )
 
     topic_centers.append(x + topic_w / 2)
@@ -241,7 +241,7 @@ for cx in topic_centers:
 rounded_box(
     0.02, 0.425,
     0.96, 0.335,
-    facecolor="#F5F9FD",
+    facecolor="#F0F7FF",
     edgecolor="#1976D2",
     linewidth=1.5,
     linestyle="--",
@@ -268,9 +268,9 @@ text(
 )
 
 text(
-    0.50, 0.690,
+    0.50, 0.720,
     "Communication delay, processing delay, and moving objects cause temporal misalignment",
-    fontsize=9,
+    fontsize=10.5,
     color="#455A64",
 )
 
@@ -295,7 +295,7 @@ arrow(
 
 sub_y = 0.475
 sub_w = 0.285
-sub_h = 0.17
+sub_h = 0.18
 
 sub_xs = [0.035, 0.3575, 0.68]
 
@@ -321,8 +321,8 @@ subcategories = [
         "title": "3.3 Communication-efficient\nLatency Reduction",
         "desc": "Reduce transmitted information\nto reduce communication delay.",
         "methods": "Where2comm\nEffiComm\nSTDS\nSlimComm",
-        "fc": "#FFF3E0",
-        "ec": "#EF6C00",
+        "fc": "#FFF0C2",
+        "ec": "#B85C00",
     },
 ]
 
@@ -343,7 +343,7 @@ for i, sub in enumerate(subcategories):
         x + sub_w / 2,
         sub_y + 0.132,
         sub["title"],
-        fontsize=11,
+        fontsize=12.5,
         weight="bold",
         color=sub["ec"],
     )
@@ -352,8 +352,8 @@ for i, sub in enumerate(subcategories):
         x + sub_w / 2,
         sub_y + 0.085,
         sub["desc"],
-        fontsize=8,
-        color="#455A64",
+        fontsize=11.5,
+        color="#263238",
     )
 
     line(
@@ -369,8 +369,8 @@ for i, sub in enumerate(subcategories):
         x + sub_w / 2,
         sub_y + 0.025,
         sub["methods"],
-        fontsize=7.4,
-        color="#37474F",
+        fontsize=10.0,
+        color="#263238",
     )
 
 
@@ -427,7 +427,7 @@ for x in sub_xs:
 rounded_box(
     0.02, 0.075,
     0.96, 0.325,
-    facecolor="#F6FBF7",
+    facecolor="#F3FFF8",
     edgecolor="#2E7D32",
     linewidth=1.5,
     linestyle="--",
@@ -449,15 +449,15 @@ rounded_box(
 text(
     0.50, 0.388,
     "3.2 Asynchronous Feature Alignment",
-    fontsize=14,
+    fontsize=15,
     weight="bold",
     color="#1B5E20",
 )
 
 text(
-    0.50, 0.340,
+    0.50, 0.368,
     "How can stale cooperative information be aligned to the current timestamp?",
-    fontsize=9,
+    fontsize=10.5,
     color="#455A64",
 )
 
@@ -479,9 +479,9 @@ arrow(
 # Four Alignment Strategies
 # ============================================================
 
-alignment_y = 0.105
-alignment_w = 0.215
-alignment_h = 0.195
+alignment_y = 0.175
+alignment_w = 0.18
+alignment_h = 0.17
 alignment_xs = [0.035, 0.265, 0.495, 0.725]
 
 alignment = [
@@ -491,8 +491,8 @@ alignment = [
         "question": "Predict what the\nfeature looks like now.",
         "papers": "SyncNet",
         "detail": "Historical feature\n→ current feature",
-        "fc": "#E3F2FD",
-        "ec": "#1976D2",
+        "fc": "#D9EEFF",
+        "ec": "#005BBB",
     },
 
     {
@@ -500,8 +500,8 @@ alignment = [
         "question": "Compensate object motion\ncaused by latency.",
         "papers": "FFNet\nCoBEVFlow",
         "detail": "Motion / BEV Flow\n→ feature warping",
-        "fc": "#E8F5E9",
-        "ec": "#388E3C",
+        "fc": "#D8FFE9",
+        "ec": "#087A3E",
     },
 
     {
@@ -509,8 +509,8 @@ alignment = [
         "question": "Use temporal trajectories\nto find correspondence.",
         "papers": "TraF-Align",
         "detail": "Trajectory field\n→ sampling / attention",
-        "fc": "#FFF3E0",
-        "ec": "#EF6C00",
+        "fc": "#FFF0C2",
+        "ec": "#B85C00",
     },
 
     {
@@ -518,8 +518,8 @@ alignment = [
         "question": "Use object states / anchors\nas alignment references.",
         "papers": "CoAnchor\nObject-level CP",
         "detail": "Object correspondence\n→ temporal alignment",
-        "fc": "#F3E5F5",
-        "ec": "#7B1FA2",
+        "fc": "#F0D9FF",
+        "ec": "#7209B7",
     },
 ]
 
@@ -541,114 +541,86 @@ for i, item in enumerate(alignment):
 
     text(
         x + alignment_w / 2,
-        alignment_y + 0.158,
+        alignment_y + 0.148,
         item["title"],
-        fontsize=10,
+        fontsize=12.0,
         weight="bold",
         color=item["ec"],
     )
 
     text(
         x + alignment_w / 2,
-        alignment_y + 0.115,
+        alignment_y + 0.108,
         item["question"],
-        fontsize=7.5,
-        color="#455A64",
+        fontsize=10.0,
+        color="#263238",
     )
 
     line(
         x + 0.015,
-        alignment_y + 0.085,
+        alignment_y + 0.078,
         x + alignment_w - 0.015,
-        alignment_y + 0.085,
+        alignment_y + 0.078,
         color="#B0BEC5",
         linewidth=0.8,
     )
 
     text(
         x + alignment_w / 2,
-        alignment_y + 0.058,
+        alignment_y + 0.052,
         item["papers"],
-        fontsize=8,
+        fontsize=9.8,
         weight="bold",
-        color="#0D47A1",
+        color="#003F88",
     )
 
     text(
         x + alignment_w / 2,
-        alignment_y + 0.025,
+        alignment_y + 0.023,
         item["detail"],
-        fontsize=7,
-        color="#455A64",
+        fontsize=9.5,
+        color="#263238",
     )
 
 
 # ============================================================
-# LEVEL 4
-# Object-Level Alignment Deep Dive
+# BOTTOM: PAPER-TO-PAPER OBJECT-LEVEL ALIGNMENT EVOLUTION
 # ============================================================
-
-# New separate bottom/side conceptual box
 
 rounded_box(
-    0.055, 0.015,
-    0.89, 0.045,
-    facecolor="#F3E5F5",
-    edgecolor="#7B1FA2",
-    linewidth=1.8,
+    0.018, 0.008, 0.964, 0.145,
+    facecolor="#F7F9FC", edgecolor="#34495E", linewidth=1.8,
 )
+text(0.50, 0.133, "OBJECT-LEVEL ALIGNMENT: RESEARCH EVOLUTION", fontsize=15,
+     weight="bold", color="#17365D")
 
-text(
-    0.50, 0.037,
-    "→ Object-Level Alignment: Object / Track / Anchor as the Temporal Correspondence Unit",
-    fontsize=11,
-    weight="bold",
-    color="#6A1B9A",
-)
-
-
-# ============================================================
-# Strong Visual Emphasis on the Main Research Path
-# ============================================================
-
-# Highlight path:
-# 6 directions → Latency → Async Feature Alignment → Object Level
-
-# Vertical path from Latency box to focus
-arrow(
-    topic_centers[2],
-    topic_y,
-    topic_centers[2],
-    0.715,
-    color="#1565C0",
-    linewidth=2.5,
-    linestyle="--",
-)
-
-# Vertical path from Async Feature Alignment to Object Level
-arrow(
-    alignment_xs[3] + alignment_w / 2,
-    alignment_y,
-    alignment_xs[3] + alignment_w / 2,
-    0.060,
-    color="#7B1FA2",
-    linewidth=2.2,
-    linestyle="--",
-)
-
+stages = [
+    {"head":"Allig 2019", "unit":"Object State", "method":"Motion Compensation", "out":"Current Object", "fc":"#D9EEFF", "ec":"#005BBB"},
+    {"head":"Allig 2020", "unit":"Object / Track", "method":"CV / CTRA Prediction", "out":"Current Object", "fc":"#D8FFE9", "ec":"#087A3E"},
+    {"head":"OptiMatch 2023", "unit":"Object", "method":"Object Correspondence", "out":"Pose Correction", "fc":"#FFF0C2", "ec":"#B85C00"},
+    {"head":"Track-to-Track 2026", "unit":"Object Track", "method":"Temporal Prediction\nData Association", "out":"Track Fusion", "fc":"#E5E7FF", "ec":"#4338CA"},
+    {"head":"CoAnchor 2026", "unit":"Object Anchor", "method":"Correspondence\nPose Refinement", "out":"Temporal Propagation\nCurrent-time Verification\nFeature-guided Fusion", "fc":"#F0D9FF", "ec":"#7209B7"},
+]
+xs = [0.032, 0.224, 0.416, 0.608, 0.800]
+w = 0.166
+for i, st in enumerate(stages):
+    x = xs[i]
+    rounded_box(x, 0.028, w, 0.087, facecolor=st["fc"], edgecolor=st["ec"], linewidth=2.0 if i == 4 else 1.4)
+    text(x+w/2, 0.097, st["head"], fontsize=12.0, weight="bold", color=st["ec"])
+    text(x+w/2, 0.076, st["unit"], fontsize=11.0, weight="bold", color="#263238")
+    text(x+w/2, 0.048, st["method"] + "\n→ " + st["out"], fontsize=9.5, color="#263238")
+    if i < len(stages)-1:
+        arrow(x+w+0.002, 0.071, xs[i+1]-0.004, 0.071, color="#455A64", linewidth=1.7)
 
 # ============================================================
 # Save
 # ============================================================
 
 plt.savefig(
-    "cooperative_perception_latency_object_alignment_tree.png",
+    "cooperative_perception_alignment_taxonomy_v2.png",
     dpi=300,
     bbox_inches="tight",
     facecolor="white",
 )
 
 plt.close()
-
-print("Saved:")
-print("cooperative_perception_latency_object_alignment_tree.png")
