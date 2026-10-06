@@ -44,7 +44,7 @@
 \end{abstract}
 
 \section{Introduction}
-I had browsed through existing works in recent 3 years in the field of Intelligent Vehicle and summarized the topic and the trend of the research. \cite{lei2022latency, hu2022where2comm, xia2024one, phcp2025progressive, wang2026communication, wei2025cooperative, wang2025latency, poibrenski2025robust, gao2025spatiotemporal, wang2025towards, huang2025vehicle, guo2025when}
+I had browsed through existing works in recent 3 years in the field of Intelligent Vehicle and summarized the topic and the trend of the research. \cite{lei2022latency, hu2022where2comm, xia2024one, phcp2025progressive, wang2026communication, wei2025cooperative, wang2025latency, poibrenski2025robust, gao2026spatiotemporal, wang2025towards, huang2025vehicle, guo2025when}
 
 There are several main problems in the field of Intelligent Vehicle, including bandwidth \& communication bottlenecks, latency \& temporal asynchrony, heterogeneity \& cross-model compatibility, infrastructure-assisted efficiency (V2I), robustness, security \& reliability, and sim-to-real gap \& empirical deployment constraints. 
 
@@ -64,7 +64,11 @@ However, these methods align features in a single frame, which may not fully cap
 Therefore, recently research moves toward object level.
 
 \section{Object level Alignment}
-Object-Level Alignment 的核心概念是利用物體本身作為不同 Agent 與不同 timestamp 之間的 correspondence reference，例如 object state、bounding box、track、trajectory 或 object-level anchor。相較於直接對整張 feature map 進行 temporal compensation，object-level 方法可以針對個別物體估計其位置、速度與時間變化，再將歷史物體資訊 propagation 至當前 timestamp。例如，CoAnchor 利用 object-level spatiotemporal anchors 建立跨 Agent 的 correspondence，先進行 temporal propagation，再進一步處理 spatial misalignment，最後利用 object-level information 引導 dense feature fusion。由此可見，Asynchronous Feature Alignment 可進一步由 feature-level compensation 發展至 object-centric temporal alignment，透過更明確的物體 correspondence 與 motion information，降低 asynchronous information 對 cooperative perception 的影響。
+
+Core concept of Object-Level Alignment is to use the object itself as a correspondence reference between different agents and different timestamps.
+For example, object state, bounding box, track, trajectory, or object-level anchor can be used as the reference.
+Compared to directly performing temporal compensation on the entire feature map, object-level methods can estimate the position, velocity, and temporal changes of individual objects, and then propagate historical object information to the current timestamp.
+Asynchronous feature alignment shifts temporal compensation from the feature level to an object-centric paradigm. By leveraging more precise object correspondences and motion cues, it can mitigate the adverse effects of temporal asynchrony on cooperative perception.
 
 % 設定 BibTeX 參考文獻樣式與引用資料庫檔名 
 \bibliographystyle{IEEEtran} 
