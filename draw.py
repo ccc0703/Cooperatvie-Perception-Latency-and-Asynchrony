@@ -595,20 +595,47 @@ text(0.50, 0.133, "OBJECT-LEVEL ALIGNMENT: RESEARCH EVOLUTION", fontsize=15,
      weight="bold", color="#17365D")
 
 stages = [
-    {"head":"Allig 2019", "unit":"Object State", "method":"Motion Compensation", "out":"Current Object", "fc":"#D9EEFF", "ec":"#005BBB"},
-    {"head":"Allig 2020", "unit":"Object / Track", "method":"CV / CTRA Prediction", "out":"Current Object", "fc":"#D8FFE9", "ec":"#087A3E"},
-    {"head":"OptiMatch 2023", "unit":"Object", "method":"Object Correspondence", "out":"Pose Correction", "fc":"#FFF0C2", "ec":"#B85C00"},
-    {"head":"Track-to-Track 2026", "unit":"Object Track", "method":"Temporal Prediction\nData Association", "out":"Track Fusion", "fc":"#E5E7FF", "ec":"#4338CA"},
-    {"head":"CoAnchor 2026", "unit":"Object Anchor", "method":"Correspondence\nPose Refinement", "out":"Temporal Propagation\nCurrent-time Verification\nFeature-guided Fusion", "fc":"#F0D9FF", "ec":"#7209B7"},
+    {"head":"A. Object / Track \nTemporal Alignment", 
+    #"unit":"Object State", 
+    "method":"Allig 2019 · Allig 2020 · Track-to-Track Fusion 2026", 
+    #"out":"Current Object", 
+    "fc":"#D9EEFF", "ec":"#005BBB"
+    },
+    {"head":"B. Object Correspondence \n& Spatial Alignment", 
+    #"unit":"Object / Track", 
+    "method":"OptiMatch 2023 · RoCo 2024", 
+    #"out":"Current Object", 
+    "fc":"#D8FFE9", "ec":"#087A3E"
+    },
+    {"head":"C. Object-level \nSpatio-Temporal Alignment", 
+     #"unit":"Object", 
+     "method":"CoAnchor 2026", 
+     #"out":"Pose Correction", 
+     "fc":"#FFF0C2", "ec":"#B85C00"
+    },
+    {"head":"D. Object-centric Representation \n& Fusion", 
+     #"unit":"Object Track", 
+     "method":"CoopDETR · CoRA · \nRobust Fusion of Object-Level V2X", 
+     #"out":"Track Fusion", 
+     "fc":"#E5E7FF", "ec":"#4338CA"
+    },
+    #{"head":"CoAnchor 2026", 
+     #"unit":"Object Anchor", 
+    # "method":"Correspondence\nPose Refinement", 
+     #"out":"Temporal Propagation\nCurrent-time Verification\nFeature-guided Fusion", 
+    # "fc":"#F0D9FF", "ec":"#7209B7"
+    #},
 ]
-xs = [0.032, 0.224, 0.416, 0.608, 0.800]
-w = 0.166
+#xs = [0.032, 0.224, 0.416, 0.608, 0.800]
+xs = [0.032, 0.260, 0.488, 0.716]
+w = 0.20
 for i, st in enumerate(stages):
     x = xs[i]
     rounded_box(x, 0.028, w, 0.087, facecolor=st["fc"], edgecolor=st["ec"], linewidth=2.0 if i == 4 else 1.4)
-    text(x+w/2, 0.097, st["head"], fontsize=12.0, weight="bold", color=st["ec"])
-    text(x+w/2, 0.076, st["unit"], fontsize=11.0, weight="bold", color="#263238")
-    text(x+w/2, 0.048, st["method"] + "\n→ " + st["out"], fontsize=9.5, color="#263238")
+    text(x+w/2, 0.097, st["head"], fontsize=13.0, weight="bold", color=st["ec"])
+    #text(x+w/2, 0.076, st["unit"], fontsize=11.0, weight="bold", color="#263238")
+    text(x+w/2, 0.048, st["method"] #+ "\n→ " + st["out"]
+         , fontsize=11, color="#263238")
     if i < len(stages)-1:
         arrow(x+w+0.002, 0.071, xs[i+1]-0.004, 0.071, color="#455A64", linewidth=1.7)
 
