@@ -75,8 +75,19 @@ Compared to directly performing temporal compensation on the entire feature map,
 Asynchronous feature alignment shifts temporal compensation from the feature level to an object-centric paradigm. 
 By leveraging more precise object correspondences and motion cues, it can mitigate the adverse effects of temporal asynchrony on cooperative perception.
 
-\subsection{Evolution of Object-Level Alignment}
+\subsection{Existing Object-Level Alignment Approaches}
+Existing object-level approaches can be grouped according to how they address temporal inconsistency, cross-agent correspondence, and spatial misalignment. 
+The first direction focuses on object or track temporal alignment, where object states are predicted or fused across different timestamps to handle asynchronous observations. 
+For example, track-to-track fusion methods explicitly consider asynchronously arriving object tracks and investigate different state-fusion strategies for maintaining a consistent global object representation \cite{castelino2026track}.
 
+The second direction focuses on object correspondence and spatial alignment. 
+RoCo formulates pose correction as an iterative object-matching and graph-optimization problem, refining agent poses based on the alignment errors of matched objects \cite{huang2024roco}.
+
+More recently, CoAnchor addresses the joint challenge of communication delay and relative-pose noise. 
+Instead of directly reasoning over dense bird's-eye-view features, it introduces sparse object-level spatio-temporal anchors as a shared interface for spatial refinement, temporal propagation, and current-time verification \cite{li2026coanchor}. 
+This provides a useful case study for examining how object-level representations can connect temporal compensation and spatial correction within a unified collaborative perception framework.
+
+In the following, we take CoAnchor as a representative example of integrated object-level spatio-temporal alignment and examine its problem formulation, design choices, technical components, and experimental evidence.
 
 % 設定 BibTeX 參考文獻樣式與引用資料庫檔名 
 \bibliographystyle{IEEEtran} 
