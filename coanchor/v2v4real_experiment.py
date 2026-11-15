@@ -6,7 +6,7 @@ v2v4real_experiment.py -- 在 V2V4Real 真實軌跡上驗證 CoAnchor object-lev
       比較「無修正」與 CoAnchor 各變體。真實的部分是：車輛軌跡、兩車的相對運動、真實 pose。
 
 用法：
-  1) 先檢查座標約定（標註在 lidar 座標系還是 world pose 是 lidar->world 還是反向？）
+  1) 先檢查座標約定（標註在 lidar 座標系還是 world？pose 是 lidar->world 還是反向？）
      python v2v4real_experiment.py check --scenario <場景資料夾>
   2) 再跑實驗（把 check 建議的旗標帶進來）
      python v2v4real_experiment.py run --scenario <場景資料夾> --delay_ms 200 --sig_t 0.6 --sig_r 0.6
@@ -46,7 +46,14 @@ def boxes_in_lidar(frame, label_frame, pose_dir):
 # check：判斷哪一種約定讓兩車的標註彼此對得上
 # --------------------------------------------------------------------------- #
 def cmd_check(a):
-    sc = Scenario(a.scenario)
+    if getattr(a, "dataset", "v2v4real") == "opv2v":
+        import opv2v_io
+        scs = opv2v_io.pair_scenarios(a.scenario, getattr(a, "pair", None))
+        if not scs:
+            print("找不到可用的 agent 配對（檢查 --pair 與場景資料夾）。"); return
+        sc = scs[0]
+    else:
+        sc = Scenario(a.scenario)
     print("agents:", sc.agents, " frames:", sc.n_frames)
     if len(sc.agents) < 2:
         print("找不到兩個 agent 資料夾，無法檢查。"); return
@@ -97,7 +104,14 @@ def noisy_dets(boxes, ids, rng, a):
     d = boxes[keep].copy()
     d[:, :2] += rng.normal(0, a.det_sigma, (len(d), 2))
     d[:, 2] += rng.normal(0, np.deg2rad(a.yaw_sigma), len(d))
-    return d, list(ids[keep])
+    mids = list(ids[keep])
+    fp = getattr(a, "fp", 0.0)
+    if fp > 0:                                           # 假陽性：範圍內均勻分布、隨機航向、id = -1
+        for _ in range(rng.poisson(fp)):
+            r_, th_ = a.range * np.sqrt(rng.random()), rng.uniform(-np.pi, np.pi)
+            d = np.vstack([d, [r_ * np.cos(th_), r_ * np.sin(th_), rng.uniform(-np.pi, np.pi)]])
+            mids.append(-1)
+    return d, mids
 
 
 def run_scenario(sc, a, rng, rows, st, diag, P, keys, qdiag):
@@ -114,14 +128,33 @@ def run_scenario(sc, a, rng, rows, st, diag, P, keys, qdiag):
 
     for t in range(warm + delay, nfr, a.stride):
         u = t - delay
+        if getattr(a, "max_dist", 0) and np.linalg.norm(
+                agent_pose(sc.frame(ae, u), pd)[:2] - agent_pose(sc.frame(an, u), pd)[:2]) > a.max_dist:
+            st["far"] = st.get("far", 0) + 1            # 傳送時刻 u 兩車距離超過通訊範圍
+            continue
         for _ in range(a.reps):
             st["attempt"] += 1
             hist, meta = {}, {}
+            bad_off = {}
+            if getattr(a, "n_bad", 0) > 0:
+                be_, ie_ = lidar_boxes(ae, u)
+                bn_, in_ = lidar_boxes(an, u)
+                common = sorted(set(ie_[np.linalg.norm(be_[:, :2], axis=1) < a.range])
+                                & set(in_[np.linalg.norm(bn_[:, :2], axis=1) < a.range]))
+                if common:
+                    pick = rng.choice(common, min(a.n_bad, len(common)), replace=False)
+                    for i_ in pick:
+                        ang_, mag_ = rng.uniform(-np.pi, np.pi), rng.uniform(a.bad_lo, a.bad_hi)
+                        bad_off[int(i_)] = mag_ * np.array([np.cos(ang_), np.sin(ang_)])
             for ag in (ae, an):
                 trk = Tracker(H=H, gate=a.trk_gate)
                 for s_ in range(u - warm, u + 1):
                     b, ids = lidar_boxes(ag, s_)
                     d, mids = noisy_dets(b, ids, rng, a)
+                    if ag == an and bad_off:               # 壞偵測只出現在 neighbor 分享的偵測中
+                        for k_, m_ in enumerate(mids):
+                            if int(m_) in bad_off:
+                                d[k_, :2] += bad_off[int(m_)]
                     T = None
                     if s_ > u - warm:
                         T = se2_compose(se2_inv(agent_pose(sc.frame(ag, s_), pd)),
@@ -189,6 +222,10 @@ def list_scenarios(a):
         raise SystemExit("請給 --scenario 或 --root")
     out = []
     for d in dirs:
+        if getattr(a, "dataset", "v2v4real") == "opv2v":
+            import opv2v_io
+            out += [s for s in opv2v_io.pair_scenarios(d, getattr(a, "pair", None)) if len(s.files) > 0]
+            continue
         try:
             sc = Scenario(d)
         except OSError:
@@ -202,22 +239,25 @@ def cmd_run(a):
     rng = np.random.default_rng(a.seed)
     names = list(VARIANTS)
     rows = {k: [] for k in names}
-    P = Params(n_min_trk=a.n_min_trk)
-    st, diag, summ = dict(attempt=0, few_tracks=0, no_gt=0), [], []
+    P = Params(n_min_trk=a.n_min_trk, nan_mode=getattr(a, "nan_mode", "d2_zero"))
+    st, diag, summ = dict(attempt=0, few_tracks=0, no_gt=0, far=0), [], []
     keys, qdiag = [], []
     for sc in list_scenarios(a):
         summ.append(run_scenario(sc, a, rng, rows, st, diag, P, keys, qdiag))
 
     n = len(rows[names[0]])
     print(f"設定：delay={a.delay_ms}ms pose noise=({a.sig_t}m,{a.sig_r}°) label_frame={a.label_frame} "
-          f"pose_dir={a.pose_dir} n_min_trk={P.n_min_trk} range={a.range} miss={a.miss}\n")
+          f"pose_dir={a.pose_dir} n_min_trk={P.n_min_trk} range={a.range} miss={a.miss}"
+          + (f" n_bad={a.n_bad}({a.bad_lo:g}-{a.bad_hi:g}m)" if a.n_bad else "") + (f" fp={a.fp:g}" if a.fp else "")
+          + (f" nan_mode={P.nan_mode}" if P.nan_mode != "d2_zero" else "") + "\n")
     print(f"{'場景':<46}{'幀數':>6}{'嘗試':>7}{'可用':>6}{'可配對上限均值':>16}{'上限≥3 的比例':>15}")
     for r in summ:
         print(f"{r['name']:<46}{r['frames']:>6}{r['att']:>7}{r['used']:>6}{r['pot']:>16.2f}{r['ge3']:>15.2f}")
     if n == 0:
         print("\n沒有可用樣本（軌跡不足 3 條）。請換場景，或放寬 --range / --miss。"); return
     d = np.array(diag, float)
-    print(f"\n合計：嘗試 {st['attempt']}；可用 {n}；因軌跡不足 3 條捨棄 {st['few_tracks']}；因無 GT 捨棄 {st['no_gt']}")
+    print(f"\n合計：嘗試 {st['attempt']}；可用 {n}；因軌跡不足 3 條捨棄 {st['few_tracks']}；因無 GT 捨棄 {st['no_gt']}"
+          + (f"；另有 {st['far']} 個幀因兩車距離 > {a.max_dist:g} m 跳過" if a.max_dist else ""))
     print(f"可用樣本平均：ego 軌跡 {d[:,0].mean():.1f}、neighbor 軌跡 {d[:,1].mean():.1f}、"
           f"真值下可配對上限 {d[:,2].mean():.1f}（配對需 ≥ {P.n_min_trk} 才會做 pose 修正）\n")
     print(f"{'變體':<34}{'pose平移(m)':>12}{'旋轉(°)':>9}{'box誤差(m)':>12}{'匹配正確率':>12}{'配對數':>8}{'修正執行率':>11}")
@@ -348,13 +388,14 @@ def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     c = sub.add_parser("check"); c.add_argument("--scenario", required=True); c.add_argument("--n_check", type=int, default=20)
+    c.add_argument("--dataset", choices=["v2v4real", "opv2v"], default="v2v4real"); c.add_argument("--pair", default=None)
     dg = sub.add_parser("diag")
     dg.add_argument("--scenario", default=None); dg.add_argument("--root", default=None)
-    dg.add_argument("--label_frame", choices=["lidar", "world"], default="lidar"); dg.add_argument("--pose_dir", choices=["l2w", "w2l"], default="l2w")
+    dg.add_argument("--label_frame", choices=["lidar", "world"], default=None); dg.add_argument("--pose_dir", choices=["l2w", "w2l"], default=None)
     dg.add_argument("--range", type=float, default=70.0); dg.add_argument("--stride", type=int, default=1); dg.add_argument("--swap", action="store_true")
     fl = sub.add_parser("floor")
     fl.add_argument("--scenario", default=None); fl.add_argument("--root", default=None)
-    fl.add_argument("--label_frame", choices=["lidar", "world"], default="lidar"); fl.add_argument("--pose_dir", choices=["l2w", "w2l"], default="l2w")
+    fl.add_argument("--label_frame", choices=["lidar", "world"], default=None); fl.add_argument("--pose_dir", choices=["l2w", "w2l"], default=None)
     fl.add_argument("--range", type=float, default=70.0); fl.add_argument("--stride", type=int, default=1)
     fl.add_argument("--thr", type=float, default=2.0); fl.add_argument("--swap", action="store_true")
     r = sub.add_parser("run")
@@ -363,8 +404,8 @@ def main():
     r.add_argument("--delay_ms", type=int, default=200)
     r.add_argument("--sig_t", type=float, default=0.6)
     r.add_argument("--sig_r", type=float, default=0.6)
-    r.add_argument("--label_frame", choices=["lidar", "world"], default="lidar")
-    r.add_argument("--pose_dir", choices=["l2w", "w2l"], default="l2w")
+    r.add_argument("--label_frame", choices=["lidar", "world"], default=None)
+    r.add_argument("--pose_dir", choices=["l2w", "w2l"], default=None)
     r.add_argument("--det_sigma", type=float, default=0.2)
     r.add_argument("--yaw_sigma", type=float, default=3.0)
     r.add_argument("--miss", type=float, default=0.1)
@@ -376,7 +417,21 @@ def main():
     r.add_argument("--trk_gate", type=float, default=3.0, help="追蹤器關聯距離門檻 (m)；高速場景可試 6")
     r.add_argument("--swap", action="store_true", help="ego/neighbor 對調")
     r.add_argument("--seed", type=int, default=0)
+    for p_ in (dg, fl, r):
+        p_.add_argument("--dataset", choices=["v2v4real", "opv2v"], default="v2v4real")
+        p_.add_argument("--pair", default=None, help="OPV2V：A,B 指定 agent 配對；不給則場景內所有兩兩組合")
+    r.add_argument("--n_bad", type=int, default=0, help="每次嘗試在 neighbor 偵測中注入幾個壞偵測（兩車共視物體，持續偏移）")
+    r.add_argument("--bad_lo", type=float, default=2.0, help="壞偵測偏移量下限 (m)")
+    r.add_argument("--bad_hi", type=float, default=3.5, help="壞偵測偏移量上限 (m)")
+    r.add_argument("--fp", type=float, default=0.0, help="每幀每個 agent 的假陽性個數（Poisson 平均）")
+    r.add_argument("--nan_mode", choices=["d2_zero", "exclude", "keep_q0"], default="d2_zero",
+                   help="沒有 ego 對應的配對在 feedback 的處理：d2_zero（預設）、exclude（排除，論文字面解讀）、keep_q0（不懲罰）")
+    r.add_argument("--max_dist", type=float, default=0.0,
+                   help="兩車在傳送時刻距離超過此值就跳過該幀（OPV2V 建議 70，即論文的通訊範圍）")
     a = ap.parse_args()
+    if a.cmd != "check":                       # 未指定時依資料集取已驗證的座標約定
+        a.label_frame = a.label_frame or ("world" if a.dataset == "opv2v" else "lidar")
+        a.pose_dir = a.pose_dir or "l2w"
     {"check": cmd_check, "run": cmd_run, "diag": cmd_diag, "floor": cmd_floor}[a.cmd](a)
 
 

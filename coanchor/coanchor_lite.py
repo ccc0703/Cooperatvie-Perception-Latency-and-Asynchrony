@@ -52,6 +52,9 @@ class Params:
     sigma_zpsi_deg: float = 8.0
     L_p: int = 3                  # 用 k = 0..L_p 的歷史點做 IRLS
     assoc_gate: float = 2.5       # [自訂] 傳播後 anchor 與 ego 當前偵測的最近鄰關聯距離
+    # [自訂] 「沒有 ego 當前對應」的配對在 feedback 如何處理（論文 4.4 節對此有歧義）：
+    #   d2_zero（預設）：d² 以 0 計，仍受短歷史殘差懲罰；exclude：直接排除，不參與下一輪；keep_q0：維持原權重、不懲罰
+    nan_mode: str = "d2_zero"
 
 
 # --------------------------------------------------------------------------- #
@@ -277,6 +280,12 @@ def coanchor(ego_hist, nb_hist, T0, delay, T_e, ego_obs_t, p: Params = Params(),
             _, nis, _ = propagate(nb_corr, T_e, delay, pairs, q0, ego_obs_t, p, apply_kalman=False)
             r_fb = np.nan_to_num(nis, nan=0.0) + short_history_residual(ego_hist, nb_corr, pairs, p)   # Eq.(7)
             q = q0 * np.exp(-p.lam_fb * r_fb)                                            # Eq.(8)
+            if p.nan_mode == "exclude":
+                q = np.where(np.isnan(nis), 0.0, q)
+            elif p.nan_mode == "keep_q0":
+                q = np.where(np.isnan(nis), q0, q)
+            elif p.nan_mode != "d2_zero":
+                raise ValueError(f"未知的 nan_mode: {p.nan_mode}")
             keep = q >= p.q_min
             if keep.sum() >= p.n_min_trk:
                 dT = refine_pose(ego_hist, nb, pairs[keep], q[keep], p)
